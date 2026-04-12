@@ -1,0 +1,36 @@
+1.authorization service:
+use google to authenticate user
+
+for providers:
+they register to make an account
+the admin can go to a user-dashboard and update their role
+
+2.statistics service:
+saves the statistics data
+provides ways to filter out specific data (getters with filters)
+export data
+for provider / admins
+
+
+3.payment service:
+handles the payment of the invoice
+viewing of the invoice
+
+4. search for plugs service
+
+5. reserve plug service
+
+
+
+
+
+•X Login χρηστών ηλεκτρικών οχηµάτων µε Google (*)
+•X Επισκόπηση / αναζήτηση σηµείων φόρτισης από χρήστες ηλεκτρικών οχηµάτων
+•X Κράτηση σηµείου φόρτισης από χρήστες ηλεκτρικών οχηµάτων
+•X Εγγραφή παρόχου υποδοµών φόρτισης
+•X Θέαση στατιστικών / analytics παρόχου
+•X Θέαση τιµολογίου χρήσηςτου saasPlug προς παρόχους
+•X Πληρωµή τιµολογίου χρήσηςτου saasPlug από παρόχους(*)
+•X Εξαγωγή (export) δεδοµένων χρήσηςτου saasPlug από παρόχους(*)
+•X Θέαση καθολικών στατιστικών / analytics από τον χειριστή του saasPlug
+
