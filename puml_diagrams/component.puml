@@ -1,0 +1,115 @@
+@startuml
+title saasPlug Component Diagram
+
+skinparam componentStyle uml2
+
+' --- External Actors ---
+package "Web/Mobile App" {
+  [UI]
+}
+
+package "Google Identity Provider" {
+    () "OAuth API" as Google_IF
+}
+
+package "Provider APIs (External)" {
+    () "Charger Info API" as Charger_IF
+}
+
+package "Payment Gateway (External)" {
+    () "Payment API" as Payment_IF
+}
+
+' --- API Gateway ---
+package "saasPlug Platform" {
+  
+  [API Gateway] <<Entry Point>> as Gateway
+  
+  ' --- Synchronous (REST/gRPC) Interfaces (Lollipops) ---
+  Gateway -up-( "REST API" : HTTP
+  [UI] -up- "REST API" 
+
+  () "Auth IF" as Auth_IF
+  () "Search IF" as Search_IF
+  () "Reservation IF" as Res_IF
+  () "Billing IF" as Bill_IF
+  () "Stats IF" as Stat_IF
+
+  Gateway -[hidden]- Auth_IF 
+  Gateway -[hidden]- Search_IF
+  Gateway -[hidden]- Res_IF
+  Gateway -[hidden]- Bill_IF
+  Gateway -[hidden]- Stat_IF
+
+  ' --- Microservices ---
+  
+  package "Authorization Service" {
+    [Auth Component] as AuthComp
+    [AuthComp] - Google_IF
+  }
+  
+  package "Search Service" {
+    [Search Component] as SearchComp
+    [SearchComp] - Charger_IF
+  }
+  
+  package "Reservation Service" {
+    [Reservation Component] as ResComp
+  }
+  
+  package "Billing Service" {
+    [Billing Component] as BillComp
+    [BillComp] - Payment_IF
+  }
+  
+  package "Statistics Service" {
+    [Statistics Component] as StatComp
+  }
+
+  ' --- Connect Gateway to Microservices (Internal REST/gRPC) ---
+  Auth_IF -down-- [AuthComp]
+  Gateway --( Auth_IF
+
+  Search_IF -down-- [SearchComp]
+  Gateway --( Search_IF
+
+  Res_IF -down-- [ResComp]
+  Gateway --( Res_IF
+
+  Bill_IF -down-- [BillComp]
+  Gateway --( Bill_IF
+
+  Stat_IF -down-- [StatComp]
+  Gateway --( Stat_IF
+
+  ' --- Message Broker (Kafka) ---
+  [Apache Kafka] <<Message Broker>> as Kafka
+
+  ' --- Asynchronous (Pub/Sub) Interfaces (Topics) ---
+  () "User Events Topic" as UserTopic
+  () "Reservation Events Topic" as ResTopic
+  () "Billing Events Topic" as BillTopic
+
+  UserTopic -up- Kafka
+  ResTopic -up- Kafka
+  BillTopic -up- Kafka
+
+  ' --- Connect Microservices to Kafka Topics (Pub/Sub) ---
+  
+  ' Producers
+  [AuthComp] -down-- UserTopic : Publishes
+  [ResComp] -down-- ResTopic : Publishes
+  [BillComp] -down- BillTopic : Publishes
+
+  ' Consumers (Sockets/Lollipops)
+  [BillComp] -down--( UserTopic : Subscribes
+  [StatComp] -down--( UserTopic : Subscribes
+  
+  [BillComp] -down--( ResTopic : Subscribes
+  [StatComp] -down--( ResTopic : Subscribes
+
+  [StatComp] -down--( BillTopic : Subscribes
+
+}
+
+@enduml

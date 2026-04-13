@@ -1,0 +1,90 @@
+@startuml deplyment_diagram
+title saasPlug Deployment Architecture
+
+skinparam componentStyle uml2
+
+node "User Device" as Client {
+    artifact "Web/Mobile App" <<UI>> as UI
+}
+
+node "Cloud Infrastructure (Docker Engine)" {
+
+    ' Entry Point
+    node "Network: Frontend-Net" {
+        [API Gateway] as Gateway <<Entry Point>>
+    }
+
+    ' Service Layer
+    node "Network: Backend-Net" {
+        
+        package "Auth Service" {
+            port "p1" as authPort
+            [Authorization Service] as AuthService
+            database "Auth DB" as AuthDB
+        }
+
+        package "Search Service" {
+            port "p2" as searchPort
+            [Search Service] as SearchService
+            database "Search DB" as SearchDB
+        }
+
+        package "Reservation Service" {
+            port "p3" as resPort
+            [Reservation Service] as ResService
+            database "Reservation DB" as ResDB
+        }
+
+        package "Billing Service" {
+            port "p4" as billPort
+            [Billing Service] as BillService
+            database "Billing DB" as BillDB
+        }
+
+        package "Statistics Service" {
+            port "p5" as statPort
+            [Statistics Service] as StatService
+            database "Stats DB" as StatDB
+        }
+    }
+
+    ' Pub/Sub Layer moved to bottom
+    node "Network: Event-Bus" {
+        queue "Apache Kafka" as Kafka
+    }
+}
+
+' External Systems moved to sides to maintain verticality
+cloud "Google OAuth" as Google
+cloud "Provider APIs" as ProviderAPI
+
+' --- Connections ---
+
+UI -down-> Gateway : HTTPS
+
+' Routing through Ports
+Gateway -down-> authPort
+Gateway -down-> searchPort
+Gateway -down-> resPort
+Gateway -down-> billPort
+Gateway -down-> statPort
+
+' Services to DBs
+AuthService -down-> AuthDB
+SearchService -down-> SearchDB
+ResService -down-> ResDB
+BillService -down-> BillDB
+StatService -down-> StatDB
+
+' Pub/Sub Flow (Vertical)
+AuthService -down-> Kafka
+SearchService -down-> Kafka
+ResService -down-> Kafka
+BillService -down-> Kafka
+StatService -down-> Kafka
+
+' External Integrations
+AuthService -left- Google
+SearchService -right- ProviderAPI
+
+@enduml

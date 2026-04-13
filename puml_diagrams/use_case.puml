@@ -1,0 +1,46 @@
+@startuml saasPlug_UseCases
+left to right direction
+skinparam packageStyle rectangle
+
+actor "EV User" as user
+actor "Charging Provider" as provider
+actor "saasPlug Operator" as operator
+
+rectangle "saasPlug System" {
+    
+    package "Identity & Access" {
+        usecase "Login with Google" as login_google
+        usecase "Register Provider Account" as reg_provider
+    }
+
+    package "Charging Operations" {
+        usecase "Search Charging Points" as search
+        usecase "Reserve Charging Point" as reserve
+    }
+
+    package "Provider Dashboard" {
+        usecase "View Personal Stats/Analytics" as view_stats
+        usecase "Export Usage Data" as export
+        usecase "View & Pay saasPlug Invoice" as pay_bill
+    }
+
+    package "System Administration" {
+        usecase "View Global Analytics" as global_stats
+    }
+}
+
+' User Relations
+user --> login_google
+user --> search
+user --> reserve
+
+' Provider Relations
+provider --> reg_provider
+provider --> view_stats
+provider --> export
+provider --> pay_bill
+
+' Operator Relations
+operator --> global_stats
+
+@enduml

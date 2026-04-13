@@ -1,4 +1,0 @@
-API Gateway
-Auth Service
-Core Service
-Transaction Service

@@ -1,24 +1,8 @@
-1.authorization service:
-use google to authenticate user
-
-for providers:
-they register to make an account
-the admin can go to a user-dashboard and update their role
-
-2.statistics service:
-saves the statistics data
-provides ways to filter out specific data (getters with filters)
-export data
-for provider / admins
-
-
-3.payment service:
-handles the payment of the invoice
-viewing of the invoice
-
-4. search for plugs service
-
-5. reserve plug service
+1.authorization service
+2.statistics service
+3.billing service
+4.search service
+5.reservation service
 
 
 
