@@ -1,0 +1,43 @@
+@startuml sequence_reservation
+title Sequence Diagram: Charging Point Reservation (with Provider API)
+
+autonumber
+actor "EV User" as User
+participant "API Gateway" as Gateway
+participant "Reservation Service" as ResService
+database "Reservation DB" as ResDB
+participant "Provider External API" as Provider
+queue "Apache Kafka" as Kafka
+
+User -> Gateway : POST /reservations\n(chargerID, timeslot)
+activate Gateway
+
+' Core Reservation Logic
+Gateway -> ResService : Process Reservation
+activate ResService
+
+' External Communication
+ResService -> Provider : POST /remote-secure-lock (chargerID)
+activate Provider
+note right: Notifying the hardware owner
+Provider --> ResService : 200 OK (Locked)
+deactivate Provider
+
+' Persistence
+ResService -> ResDB : Save Reservation (Status: ACTIVE)
+activate ResDB
+ResDB --> ResService : Saved
+deactivate ResDB
+
+' Async Event Production
+ResService -> Kafka : Publish "ReservationCreated" Event
+activate Kafka
+deactivate Kafka
+
+ResService --> Gateway : 201 Created (ResDTO)
+deactivate ResService
+
+Gateway --> User : Show Confirmation & QR Code
+deactivate Gateway
+
+@enduml

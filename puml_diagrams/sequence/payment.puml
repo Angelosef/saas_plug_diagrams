@@ -1,0 +1,62 @@
+@startuml sequence_payment
+title Sequence Diagram: Provider Invoice Retrieval and Payment
+
+autonumber
+actor "Station Provider" as Provider
+participant "API Gateway" as Gateway
+participant "Billing Service" as BillService
+database "Billing DB" as BillDB
+participant "Payment Gateway" as Stripe <<External>>
+queue "Apache Kafka" as Kafka
+
+== Invoice Retrieval ==
+
+Provider -> Gateway : GET /invoices/current
+activate Gateway
+
+Gateway -> BillService : Request Current Invoice
+activate BillService
+
+BillService -> BillDB : Generate/Retrieve Invoice Record
+activate BillDB
+BillDB --> BillService : InvoiceDTO
+deactivate BillDB
+
+BillService --> Gateway : 200 OK (Invoice Details)
+deactivate BillService
+
+Gateway --> Provider : Display Invoice & "Pay Now" Button
+deactivate Gateway
+
+== Payment Process ==
+
+Provider -> Gateway : POST /payments/{invoiceID}
+activate Gateway
+
+Gateway -> BillService : Process Payment
+activate BillService
+
+' External Payment Integration
+BillService -> Stripe : Initiate Transaction (Amount, CardDetails)
+activate Stripe
+Stripe --> BillService : 200 OK (TransactionID: XYZ)
+deactivate Stripe
+
+' Persistence
+BillService -> BillDB : Update Invoice Status (PAID)
+activate BillDB
+BillDB --> BillService : Updated
+deactivate BillDB
+
+' Notify System of Revenue
+BillService -> Kafka : Publish "PaymentCompleted" Event
+activate Kafka
+deactivate Kafka
+
+BillService --> Gateway : 200 OK (Receipt)
+deactivate BillService
+
+Gateway --> Provider : Show Success Message
+deactivate Gateway
+
+@endluml

@@ -1,8 +1,8 @@
 X - Use case 5%
 X - ER ή Class (persistency) 15%
-Activity 10%
+XX - Activity 10%
 X - Component 15%
 X - Class (data struct) 10%
 X - Deployment 15%
 X - Class (APIs) 15%
-Sequence 15%
+XX - Sequence 15%

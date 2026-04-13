@@ -1,0 +1,37 @@
+@startuml activity_reserve
+title Activity Diagram: saasPlug Reservation Logic
+
+start
+:User searches for chargers (Map/List);
+:Selects specific Charging Point;
+:User requests "Book Now";
+
+:System checks local Reservation DB;
+if (Timeslot available locally?) then (no)
+:Show "Already Booked" message;
+stop
+else (yes)
+:Call Provider API for real-time status;
+
+if (Charger Online & Available?) then (yes)
+    fork
+    :Lock charger via Provider API;
+    fork again
+    :Create pending record in Reservation DB;
+    end fork
+
+    :Confirm Reservation;
+    :Update status to "ACTIVE";
+    :Publish "ReservationCreated" to Kafka;
+    :Display Success Message;
+    stop
+    
+
+else (no)
+    :Update local Search DB status to "OFFLINE";
+    :Show "Charger Unavailable" message;
+    stop
+endif
+endif
+
+@enduml
