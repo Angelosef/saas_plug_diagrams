@@ -33,7 +33,6 @@ package "Search DB" #F1F8E9 {
   entity "Provider" as provider {
     * providerID : UUID <<PK>>
     --
-    providerID : UUID <<FK>>
     name : String
   }
 
@@ -69,18 +68,19 @@ package "Reservation DB" #FFF3E0 {
 }
 
 package "Billing DB" #F3E5F5 {
-  entity "Bill" as bill {
-    * billID : UUID <<PK>>
+  entity "Invoice" as invoice {
+    * invoiceID : UUID <<PK>>
     --
     providerID : UUID <<FK>>
     amount : Decimal
     issuedAt : DateTime
+    paid : bool
   }
 
   entity "PaidReservations" as paid {
     * PaidReservations : UUID <<PK>>
     --
-    billID : UUID <<FK>>
+    invoiceID : UUID <<FK>>
     reservationID: UUID <<FK>>
   }
 
@@ -103,11 +103,6 @@ package "Billing DB" #F3E5F5 {
     --
   }
 
-  entity "provider" as provider {
-    * providerID : UUID <<PK>>
-    --
-    name: string
-  }
 }
 
 package "Statistics DB" #EFEBE9 {

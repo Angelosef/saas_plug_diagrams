@@ -1,0 +1,77 @@
+@startuml class_diagram
+title saasPlug API and Data Model Class Diagram
+
+skinparam classAttributeIconSize 0
+hide circle
+
+' --- Data Transfer Objects (JSON Models) ---
+package "Data Models (JSON Objects)" <<Rectangle>> {
+    
+    class UserDTO {
+        + userID: UUID
+        + email: String
+        + role: String
+    }
+
+    class ChargingPointDTO {
+        + chargerID: UUID
+        + providerID: UUID
+        + location: GPSCoords
+        + powerKW: int
+        + status: String
+        + kwhPrice: float
+    }
+
+    class ReservationDTO {
+        + reservationID: UUID
+        + userID: UUID
+        + chargerID: UUID
+        + startTime: DateTime
+        + endTime: DateTime
+        + status: String
+    }
+
+    class InvoiceDTO {
+        + invoiceID: UUID
+        + providerID: UUID
+        + amount: decimal
+        + isPaid: boolean
+    }
+}
+
+' --- API Interfaces ---
+package "APIs (Service Controllers)" <<Rectangle>> {
+
+    interface "IAuthAPI" {
+        + Login(): UserDTO
+        + Register(): UserDTO
+    }
+
+    interface "ISearchAPI" {
+        + getChargingPoints(location: GPS, radius: int): List<ChargingPointDTO>
+        + getChargingPointDetails(id: int): ChargingPointDTO
+    }
+
+    interface "IReservationAPI" {
+        + createBooking(userID: int, chargingPointID: int): ReservationDTO
+        + getUserBookings(userID: int): List<ReservationDTO>
+    }
+
+    interface "IBillingAPI" {
+        + getInvoice(providerID: int): InvoiceDTO
+        + processPayment(invoiceID: int): PaymentStatus
+    }
+
+    interface "IStatisticsAPI" {
+        + getReservations(providerID: int, startDate: string, endDate: string): List<ReservationDTO>
+        + getInvoices(providerID: int, startDate: string, endDate: string): List<InvoiceDTO>
+    }
+}
+
+' --- Relationships (Usage) ---
+IAuthAPI ..> UserDTO : "returns"
+ISearchAPI ..> ChargingPointDTO : "returns"
+IReservationAPI ..> ReservationDTO : "returns"
+IBillingAPI ..> InvoiceDTO : "returns"
+
+@enduml
