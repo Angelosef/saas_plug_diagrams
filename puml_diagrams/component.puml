@@ -1,4 +1,4 @@
-@startuml
+@startuml component_diagram
 title saasPlug Component Diagram
 
 skinparam componentStyle uml2

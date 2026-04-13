@@ -1,0 +1,155 @@
+@startuml er_diagram
+title saasPlug Partitioned ER Diagram (Microservices)
+
+' Formatting
+hide circle
+skinparam Linetype ortho
+
+package "Authorization DB" #E3F2FD {
+  entity "User" as user {
+    * userID : UUID <<PK>>
+    --
+    email : String
+    googleID : String
+    role : Enum(EV_OWNER, PROVIDER, ADMIN)
+    createdAt : DateTime
+  }
+}
+
+package "Search DB" #F1F8E9 {
+  
+  entity "ChargingPoint" as charger {
+    * chargerID : UUID <<PK>>
+    --
+    providerID : UUID <<FK>>
+    latitude: float
+    longitude: float
+    powerKW : Integer
+    status : Enum(AVAILABLE, BUSY)
+    capacity: Integer
+    kwhPrice: Float
+  }
+
+  entity "Provider" as provider {
+    * providerID : UUID <<PK>>
+    --
+    providerID : UUID <<FK>>
+    name : String
+  }
+
+}
+
+package "Reservation DB" #FFF3E0 {
+  entity "Reservation" as res {
+    * resID : UUID <<PK>>
+    --
+    userID : UUID <<FK>>
+    chargingPointID : UUID <<FK>>
+    startTime : DateTime
+    endTime : DateTime
+    status : String
+  }
+
+  entity "User" as user {
+    * userID : UUID <<PK>>
+    --
+  }
+
+  entity "provider" as provider {
+    * providerID : UUID <<PK>>
+    --
+    name: string
+  }
+
+  entity "ChargingPoint" as charger {
+    * chargerID : UUID <<PK>>
+    --
+    providerID : UUID <<FK>>
+  }
+}
+
+package "Billing DB" #F3E5F5 {
+  entity "Bill" as bill {
+    * billID : UUID <<PK>>
+    --
+    providerID : UUID <<FK>>
+    amount : Decimal
+    issuedAt : DateTime
+  }
+
+  entity "PaidReservations" as paid {
+    * PaidReservations : UUID <<PK>>
+    --
+    billID : UUID <<FK>>
+    reservationID: UUID <<FK>>
+  }
+
+  entity "provider" as provider {
+    * providerID : UUID <<PK>>
+    --
+    name: string
+  }
+
+  entity "Reservation" as res {
+    * resID : UUID <<PK>>
+    --
+    userID : UUID <<FK>>
+    chargingPointID : UUID <<FK>>
+    status : String
+  }
+
+  entity "User" as user {
+    * userID : UUID <<PK>>
+    --
+  }
+
+  entity "provider" as provider {
+    * providerID : UUID <<PK>>
+    --
+    name: string
+  }
+}
+
+package "Statistics DB" #EFEBE9 {
+    entity "User" as user {
+    * userID : UUID <<PK>>
+    --
+    createdAt : DateTime
+  }
+
+  entity "ChargingPoint" as charger {
+    * chargerID : UUID <<PK>>
+    --
+    providerID : UUID <<FK>>
+    latitude: float
+    longitude: float
+  }
+
+  entity "Provider" as provider {
+    * providerID : UUID <<PK>>
+    --
+    providerID : UUID <<FK>>
+    name : String
+  }
+
+  entity "Reservation" as res {
+    * resID : UUID <<PK>>
+    --
+    userID : UUID <<FK>>
+    chargingPointID : UUID <<FK>>
+    startTime : DateTime
+    endTime : DateTime
+    status : String
+  }
+
+  entity "Bill" as bill {
+    * billID : UUID <<PK>>
+    --
+    providerID : UUID <<FK>>
+    amount : Decimal
+    issuedAt : DateTime
+  }
+    
+}
+
+@enduml
