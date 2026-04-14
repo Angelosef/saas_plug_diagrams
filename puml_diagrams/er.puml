@@ -34,6 +34,7 @@ package "Search DB" #F1F8E9 {
     * providerID : UUID <<PK>>
     --
     name : String
+    apiURL : String
   }
 
 }
@@ -49,15 +50,11 @@ package "Reservation DB" #FFF3E0 {
     status : String
   }
 
-  entity "User" as user {
-    * userID : UUID <<PK>>
-    --
-  }
-
   entity "provider" as provider {
     * providerID : UUID <<PK>>
     --
     name: string
+    apiURL : String
   }
 
   entity "ChargingPoint" as charger {
@@ -96,11 +93,6 @@ package "Billing DB" #F3E5F5 {
     userID : UUID <<FK>>
     chargingPointID : UUID <<FK>>
     status : String
-  }
-
-  entity "User" as user {
-    * userID : UUID <<PK>>
-    --
   }
 
 }
