@@ -11,9 +11,31 @@ package "Authorization DB" #E3F2FD {
     --
     email : String
     googleID : String
-    role : Enum(EV_OWNER, PROVIDER, ADMIN)
     createdAt : DateTime
   }
+
+  entity "Provider" as provider {
+    * providerID : UUID <<PK>>
+    --
+    name : String
+    apiURL : String
+    taxCode : String
+  }
+
+  entity "Admin" as admin {
+    * adminID : UUID <<PK>>
+    --
+    * userID : UUID <<FK>>
+  }
+
+  entity "UserProvider" as userProvider {
+    * userProviderID : UUID <<PK>>
+    --
+    * userID : UUID <<FK>>
+    * providerID : UUID <<FK>>
+  }
+
+
 }
 
 package "Search DB" #F1F8E9 {
@@ -85,6 +107,7 @@ package "Billing DB" #F3E5F5 {
     * providerID : UUID <<PK>>
     --
     name: string
+    taxCode : string
   }
 
   entity "Reservation" as res {
@@ -115,7 +138,6 @@ package "Statistics DB" #EFEBE9 {
   entity "Provider" as provider {
     * providerID : UUID <<PK>>
     --
-    providerID : UUID <<FK>>
     name : String
   }
 

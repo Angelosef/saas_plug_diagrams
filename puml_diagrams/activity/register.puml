@@ -19,26 +19,6 @@ if (Google Authentication Successful?) then (yes)
 
   :Display Home Dashboard;
   
-  if (User wants to register as Provider?) then (yes)
-    :User selects "Become a Provider";
-    :Display Provider Registration Form;
-    :User enters Company Details & API Endpoint;
-    
-    if (Validate Business Info?) then (success)
-      :Update User Role to PROVIDER;
-      :Create Provider Profile;
-      :Link Charger API Endpoint to Account;
-      :Publish "ProviderOnboarded" to Kafka;
-      :Show Provider Dashboard;
-    else (failure)
-      :Show Validation Errors;
-      stop
-    endif
-  else (no)
-    :Continue as EV User;
-    :Show Map/Search Interface;
-  endif
-  
   stop
 else (no)
   :Display Auth Error Message;
