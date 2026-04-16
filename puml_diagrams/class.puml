@@ -10,7 +10,6 @@ package "Data Models (JSON Objects)" <<Rectangle>> {
     class UserDTO {
         + userID: UUID
         + email: String
-        + role: String
     }
 
     class ChargingPointDTO {
@@ -37,6 +36,13 @@ package "Data Models (JSON Objects)" <<Rectangle>> {
         + amount: decimal
         + isPaid: boolean
     }
+
+    class AccessLevelDTO {
+        + userID: UUID
+        + isAdmin: boolean
+        + providerIDs: List<int>
+        + providerNames: List<string>
+    }
 }
 
 ' --- API Interfaces ---
@@ -44,17 +50,19 @@ package "APIs (Service Controllers)" <<Rectangle>> {
 
     interface "IAuthAPI" {
         + Login(): UserDTO
-        + Register(): UserDTO
+        + GetAccessLevel(userID: int): AccessLevelDTO
+        + UpdateAccessLevel(AccessLevelDTO): Status
+        + RegisterProvider(name: string, apiURL: string, taxCode: string): Status
     }
 
     interface "ISearchAPI" {
         + getChargingPoints(location: GPS, radius: int): List<ChargingPointDTO>
-        + getChargingPointDetails(id: int): ChargingPointDTO
+        + getChargingPointDetails(chargingPointID: int): ChargingPointDTO
     }
 
     interface "IReservationAPI" {
-        + createBooking(userID: int, chargingPointID: int): ReservationDTO
-        + getUserBookings(userID: int): List<ReservationDTO>
+        + createReservation(userID: int, chargingPointID: int): ReservationDTO
+        + getUserReservations(userID: int): List<ReservationDTO>
     }
 
     interface "IBillingAPI" {
@@ -67,11 +75,5 @@ package "APIs (Service Controllers)" <<Rectangle>> {
         + getInvoices(providerID: int, startDate: string, endDate: string): List<InvoiceDTO>
     }
 }
-
-' --- Relationships (Usage) ---
-IAuthAPI ..> UserDTO : "returns"
-ISearchAPI ..> ChargingPointDTO : "returns"
-IReservationAPI ..> ReservationDTO : "returns"
-IBillingAPI ..> InvoiceDTO : "returns"
 
 @enduml
