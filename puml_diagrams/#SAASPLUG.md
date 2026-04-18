@@ -111,6 +111,22 @@ operator --> global_stats
 
 ### 3.2.1 Login with Google
 
+- **Actors**: User  
+- **Preconditions**:  
+  a) User has a valid Google account.  
+- **Main Flow**:  
+  1. User clicks the "Login/Sign up with Google" button on the application's login page.  
+  2. System redirects the user to Google's OAuth authentication interface.  
+  3. User enters Google credentials and grants permission for account access.  
+  4. System validates credentials and retrieves user profile data (email, name).  
+  5. System redirects the user to the dashboard and displays a welcome message.  
+- **Alternate Flows**:  
+  - **Invalid Credentials**: If authentication fails, the system displays "Login Failed: Invalid Google Account."  
+- **Postconditions**:  
+  a) User is authenticated.  
+  b) SaasPlug dashboard becomes accessible.
+
+
 - **Activity Diagram**:
 
   ```plantuml
@@ -144,7 +160,22 @@ operator --> global_stats
     @enduml
   ```
 
-  ### 3.2.2 Resarvation for Charging
+  ### 3.2.2 Resarvation for Charging 
+
+  - **Actors**: User  
+- **Preconditions**:  User already logged in . 
+
+- **Main Flow**:  
+  1. User search for avaliable charges on menu .  
+  2. User click the charger he wants.  
+  3. Dashboard show book now button or go back.  
+  4. User clicks Book now button .  
+  5. Reservation commit to DB
+  6. System displays "Resarvation Created ".
+
+  - **Alternate Flows**:  
+  - **Already Booked**:If the charger is not avaliable, sytsem displays "Already Booked !! " .
+  - **Out of Order**:If charger charger is offline,system displays "Charger Unavailable" 
 
   - **Activity Diagram**:
 
