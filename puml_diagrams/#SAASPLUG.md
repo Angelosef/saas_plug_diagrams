@@ -45,9 +45,9 @@ SaasPlug is a SaaS (Software as a Service) standalone web application. It uses a
 Primary users include electric vehicle users who need a simple app to find a charging point near them and also charging providers looking for customers . No coding or technical skills are required.
 
 ### 2.4 Operating Environment  
-- **Frontend**: Modern browsers (Chrome, Firefox, Safari).   
-- **Backend**: Server with Node.js,Python and React. 
-- **Database**: Docker Containers.  
+- **Frontend**: Modern browsers (Chrome, Firefox, Safari) -- React.   
+- **Backend**: Server with Node.js, Python. 
+- **Database**: SQL / Postgres.  
 - **Network**: Internet connectivity required for backend-database communication.  
 
 ### 2.5 Assumptions and Dependencies  
@@ -122,40 +122,20 @@ operator --> global_stats
     :Redirect to Google OAuth;
 
     if (Google Authentication Successful?) then (yes)
-        :Receive Google Identity Token;
-        :Auth Service checks if User exists in DB;
-  
-        if (User already exists?) then (no)
-            :Create new User Profile;
-            :Assign default Role (EV_USER);
-            :Publish "UserRegistered" to Kafka;
-        else (yes)
-            :Retrieve existing Profile;
-        endif
-
-        :Display Home Dashboard;
-  
-        if (User wants to register as Provider?) then (yes)
-            :User selects "Become a Provider";
-            :Display Provider Registration Form;
-            :User enters Company Details & API Endpoint;
+    :Receive Google Identity Token;
+    :Auth Service checks if User exists in DB;
     
-            if (Validate Business Info?) then (success)
-                :Update User Role to PROVIDER;
-                :Create Provider Profile;
-                :Link Charger API Endpoint to Account;
-                :Publish "ProviderOnboarded" to Kafka;
-                :Show Provider Dashboard;
-            else (failure)
-                :Show Validation Errors;
-                stop
-            endif
-        else (no)
-            :Continue as EV User;
-            :Show Map/Search Interface;
-        endif
+    if (User already exists?) then (no)
+        :Create new User Profile;
+        :Assign default Role (EV_USER);
+        :Publish "UserRegistered" to Kafka;
+    else (yes)
+        :Retrieve existing Profile;
+    endif
 
-        stop
+    :Display Home Dashboard;
+    
+    stop
     else (no)
     :Display Auth Error Message;
     stop
@@ -223,11 +203,10 @@ operator --> global_stats
 
     ' --- Data Transfer Objects (JSON Models) ---
     package "Data Models (JSON Objects)" <<Rectangle>> {
-    
+        
         class UserDTO {
             + userID: UUID
             + email: String
-            + role: String
         }
 
         class ChargingPointDTO {
@@ -254,6 +233,13 @@ operator --> global_stats
             + amount: decimal
             + isPaid: boolean
         }
+
+        class AccessLevelDTO {
+            + userID: UUID
+            + isAdmin: boolean
+            + providerIDs: List<int>
+            + providerNames: List<string>
+        }
     }
 
     ' --- API Interfaces ---
@@ -261,17 +247,19 @@ operator --> global_stats
 
         interface "IAuthAPI" {
             + Login(): UserDTO
-            + Register(): UserDTO
+            + GetAccessLevel(userID: int): AccessLevelDTO
+            + UpdateAccessLevel(AccessLevelDTO): Status
+            + RegisterProvider(name: string, apiURL: string, taxCode: string): Status
         }
 
         interface "ISearchAPI" {
             + getChargingPoints(location: GPS, radius: int): List<ChargingPointDTO>
-            + getChargingPointDetails(id: int): ChargingPointDTO
+            + getChargingPointDetails(chargingPointID: int): ChargingPointDTO
         }
 
         interface "IReservationAPI" {
-            + createBooking(userID: int, chargingPointID: int): ReservationDTO
-            + getUserBookings(userID: int): List<ReservationDTO>
+            + createReservation(userID: int, chargingPointID: int): ReservationDTO
+            + getUserReservations(userID: int): List<ReservationDTO>
         }
 
         interface "IBillingAPI" {
@@ -285,14 +273,9 @@ operator --> global_stats
         }
     }
 
-    ' --- Relationships (Usage) ---
-    IAuthAPI ..> UserDTO : "returns"
-    ISearchAPI ..> ChargingPointDTO : "returns"
-    IReservationAPI ..> ReservationDTO : "returns"
-    IBillingAPI ..> InvoiceDTO : "returns"
-
     @enduml
  ```
+
 
 ### 4.2 ER Diagram
 
@@ -310,9 +293,31 @@ operator --> global_stats
         --
         email : String
         googleID : String
-        role : Enum(EV_OWNER, PROVIDER, ADMIN)
         createdAt : DateTime
     }
+
+    entity "Provider" as provider {
+        * providerID : UUID <<PK>>
+        --
+        name : String
+        apiURL : String
+        taxCode : String
+    }
+
+    entity "Admin" as admin {
+        * adminID : UUID <<PK>>
+        --
+        * userID : UUID <<FK>>
+    }
+
+    entity "UserProvider" as userProvider {
+        * userProviderID : UUID <<PK>>
+        --
+        * userID : UUID <<FK>>
+        * providerID : UUID <<FK>>
+    }
+
+
     }
 
     package "Search DB" #F1F8E9 {
@@ -384,6 +389,7 @@ operator --> global_stats
         * providerID : UUID <<PK>>
         --
         name: string
+        taxCode : string
     }
 
     entity "Reservation" as res {
@@ -414,7 +420,6 @@ operator --> global_stats
     entity "Provider" as provider {
         * providerID : UUID <<PK>>
         --
-        providerID : UUID <<FK>>
         name : String
     }
 
@@ -434,6 +439,11 @@ operator --> global_stats
         providerID : UUID <<FK>>
         amount : Decimal
         issuedAt : DateTime
+    }
+
+    entity "ChargingPointClicks" as clicks {
+        time : TimeStamp
+        chargingPointID : UUID <<FK>>
     }
         
     }
