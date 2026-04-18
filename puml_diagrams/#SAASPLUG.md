@@ -7,10 +7,11 @@
 ## 1. Introduction
 
 ### 1.1 Purpose  
-The saasPlug Application is a web-based service that allows electric vehicle users to find and book chargers from any provider.
+The saasPlug Application is a web-based service that allows EV users to find and book chargers from any provider.
 
 ### 1.2 Scope  
-This application allows users to:  
+This application allows users to: 
+-Login with Google
 - Search the avaliable charging points  
 - Book the charging point they want  
 - Register for charging providers   
@@ -31,13 +32,14 @@ This document outlines functional and non-functional requirements, use cases, an
 ### 2.1 Product Perspective  
 SaasPlug is a SaaS (Software as a Service) standalone web application. It uses a database  for user and analytics storage.
 
-### 2.2 Product Functions  
-1. Search fot the avaliable charging points.  
-2. Booking the charging point of user preference.  
-3. Registration for charging providers.  
-4. Display analytics for each provider.  
-5. Display saasPlug usage invoice for providers.  
-6. Display global statistics / analytics from the saasPlug operator  
+### 2.2 Product Functions 
+1. Login user with Google.
+2. Search fot the avaliable charging points.  
+3. Booking the charging point of user preference.  
+4. Registration for charging providers.  
+5. Display analytics for each provider.  
+6. Display saasPlug usage invoice for providers.  
+7. Display global statistics / analytics from the saasPlug operator  
 
 ### 2.3 User Characteristics  
 Primary users include electric vehicle users who need a simple app to find a charging point near them and also charging providers looking for customers . No coding or technical skills are required.
@@ -49,18 +51,13 @@ Primary users include electric vehicle users who need a simple app to find a cha
 - **Network**: Internet connectivity required for backend-database communication.  
 
 ### 2.5 Assumptions and Dependencies  
-
+- Google OAuth is available for user authentication.
 
 ---
 
-## 3. Functional Requirements
+## 3. Use cases
 
-### 3.1 Functional Requirements Specification  
-
-
-### 3.2 Use Case
-
-#### 3.2.1 Use Case Diagram  
+### 3.1 Use Case Diagram  
 ```plantuml
 @startuml saasPlug_UseCases
 left to right direction
@@ -110,9 +107,12 @@ operator --> global_stats
 @enduml
 ```
 
-#### 3.2.2 Use Case Activity Diagram
+### 3.2 Use Cases Activity Diagrams
+
+### 3.2.1 Login with Google
 
 - **Activity Diagram**:
+
   ```plantuml
     @startuml activity_register
     title Activity Diagram: saasPlug Registration & Onboarding
@@ -164,12 +164,57 @@ operator --> global_stats
     @enduml
   ```
 
+  ### 3.2.2 Resarvation for Charging
+
+  - **Activity Diagram**:
+
+```plantuml
+    @startuml activity_reserve
+    title Activity Diagram: saasPlug Reservation Logic
+
+    start
+    :User searches for chargers (Map/List);
+    :Selects specific Charging Point;
+    :User requests "Book Now";
+
+    :System checks local Reservation DB;
+    if (Timeslot available locally?) then (no)
+    :Show "Already Booked" message;
+    stop
+    else (yes)
+    :Call Provider API for real-time status;
+
+    if (Charger Online & Available?) then (yes)
+        fork
+        :Lock charger via Provider API;
+        fork again
+        :Create pending record in Reservation DB;
+        end fork
+
+        :Confirm Reservation;
+        :Update status to "ACTIVE";
+        :Publish "ReservationCreated" to Kafka;
+        :Display Success Message;
+        stop
+        
+
+    else (no)
+        :Update local Search DB status to "OFFLINE";
+        :Show "Charger Unavailable" message;
+        stop
+    endif
+    endif
+
+    @enduml
+ ```
+
 ---
 
 ## 4. Classes and Entities relations
 
 ### 4.1 Class Diagram
 
+```plantuml
     @startuml class_diagram
     title saasPlug API and Data Model Class Diagram
 
@@ -247,9 +292,11 @@ operator --> global_stats
     IBillingAPI ..> InvoiceDTO : "returns"
 
     @enduml
+ ```
 
 ### 4.2 ER Diagram
 
+```plantuml
     @startuml er_diagram
     title saasPlug Partitioned ER Diagram (Microservices)
 
@@ -392,9 +439,11 @@ operator --> global_stats
     }
 
     @enduml
+```
 
 ## 5. Component Diagram 
 
+```plantuml
     @startuml component_diagram
     title saasPlug Component Diagram
 
@@ -508,10 +557,11 @@ operator --> global_stats
     [StatComp] -down--( BillTopic : Subscribes
 
     @enduml
-
+```
 
 ## 6.Deployment
 
+```plantuml
     @startuml deplyment_diagram
     title saasPlug Deployment Architecture
 
@@ -602,11 +652,13 @@ operator --> global_stats
     SearchService -right- ProviderAPI
 
     @enduml
+```
 
 ## 7.Sequence Diagram 
 
 ### 7.1 Payment 
 
+```plantuml
     @startuml sequence_payment
     title Sequence Diagram: Provider Invoice Retrieval and Payment
 
@@ -669,9 +721,11 @@ operator --> global_stats
     deactivate Gateway
 
     @endluml
+```
 
 ### 7.2 Resevation
 
+```plantuml
     @startuml sequence_reservation
     title Sequence Diagram: Charging Point Reservation (with Provider API)
 
@@ -715,4 +769,4 @@ operator --> global_stats
     deactivate Gateway
 
     @enduml
-
+```
