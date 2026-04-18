@@ -158,6 +158,11 @@ package "Statistics DB" #EFEBE9 {
     amount : Decimal
     issuedAt : DateTime
   }
+
+  entity "ChargingPointClicks" as clicks {
+    time : TimeStamp
+    chargingPointID : UUID <<FK>>
+  }
     
 }
 
